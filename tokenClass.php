@@ -1,6 +1,6 @@
 <?php
 
-class Token
+class tokenClass
 {
     /**
      * CSRFトークンの生成

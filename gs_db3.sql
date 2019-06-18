@@ -66,6 +66,7 @@ CREATE TABLE `gs_book_table` (
   `authors` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
   `publisher` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
   `publishedDate` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
+  `reserveDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -73,9 +74,10 @@ CREATE TABLE `gs_book_table` (
 -- テーブルのデータのダンプ `gs_book_table`
 --
 
-INSERT INTO `gs_book_table` (`id`, `title`, `authors`, `publisher`, `publishedDate`, `user_id`) VALUES
-(1, 'こころ', '夏目漱石', 'Google, Inc.', '1961', 1),
-(3, '青年', '森鴎外', 'Orionbooks', '1956', 1);
+INSERT INTO `gs_book_table` (`id`, `title`, `authors`, `publisher`, `publishedDate`, `reserveDate`, `user_id`) VALUES
+(1, '要領よくマスターしたもの勝ち社会福祉士・精神保健福祉士国家試験・共通問題', '社会福祉士国家試験研究会', '', '2007-06-30', '2019-06-18 10:51:10', 1),
+(3, '死ぬまでに読んでおきたい　太宰治', '太宰治', 'ユナイテッド・ブックス', '', '2019-06-18 10:51:10', 1),
+(4, '田舎教師', '田山花袋', '', '2018-03', '2019-06-18 10:51:10', 4);
 
 -- --------------------------------------------------------
 
@@ -97,7 +99,9 @@ CREATE TABLE `gs_user_table` (
 --
 
 INSERT INTO `gs_user_table` (`id`, `name`, `lid`, `lpw`, `kanri_flg`, `life_flg`) VALUES
-(1, 'システム管理者', 'admin', '$2y$10$k9Wq6P4AVqcIBoJ7fIhpZeyOOKuEMNyg/uELBJMl77jriERryWCMq', 1, 0);
+(1, 'システム管理者', 'admin', '$2y$10$hi6rBdkcgGyzSsAaU4QMGuvXbuCC/JNFelIlZq9/Fp0T6RTAnSgqe', 1, 0),
+(4, '西川 真', 'nishikama', '$2y$10$z1/vY0vdt8pSwNta8evkbemokGweBO9CQz3mzMbsOyyXX5aOsUl06', 0, 0),
+(5, '西川 紀実子', 'kimitty', '$2y$10$zg9gzaIuaZriEThAcyo/f.5aqDp9BkbUrL/QdMw.XsuID/PPcCRHW', 0, 0);
 
 --
 -- Indexes for dumped tables
@@ -136,13 +140,13 @@ ALTER TABLE `gs_an_table`
 -- AUTO_INCREMENT for table `gs_book_table`
 --
 ALTER TABLE `gs_book_table`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `gs_user_table`
 --
 ALTER TABLE `gs_user_table`
-  MODIFY `id` int(12) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(12) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- ダンプしたテーブルの制約

@@ -1,11 +1,20 @@
 <?php
 
+require_once('./tokenClass.php');
+require_once('./logoutClass.php');
+
 // セッション変数を使うことを宣言する
 session_start();
-session_regenerate_id(true);
+
+// トークンが存在するならログインしていることになる
+if (isset($_SESSION['token'])) {
+    $logout = new logoutClass();
+    $logout->execute();
+}
 
 // もしセッション変数に定義がある場合は、入力した内容をセットする
 $lid = $_SESSION['lid'] ?? '';
+$error = $_SESSION['error'] ?? '';
 
 // サニタイズする
 $lid = htmlspecialchars($lid, ENT_QUOTES);
@@ -34,8 +43,7 @@ $lid = htmlspecialchars($lid, ENT_QUOTES);
                         <?php
 
                         // エラーがあった場合は、エラー表示をする
-                        if (!empty($_SESSION['error'])) {
-                            $error = $_SESSION['error'];
+                        if (!empty($error)) {
 
                             // 赤文字にする
                             ?>
@@ -43,7 +51,7 @@ $lid = htmlspecialchars($lid, ENT_QUOTES);
                                 <p><?php echo $error; ?></p>
                             </div>
                             <?php
-                                unset($_SESSION['error']);
+                            
                         }
 
                         ?>
@@ -56,9 +64,9 @@ $lid = htmlspecialchars($lid, ENT_QUOTES);
                             </div>
 
                             <div class="form-group">
-                                <label for="lpw">ログインパスワード</label>
+                                <label for="lpw">パスワード</label>
                                 <div class="col-sm-10">
-                                    <input type="password" id="lpw" name="lpw" class="form-control">
+                                    <input type="password" id="lpw" name="lpw" value="" class="form-control">
                                 </div>
                             </div>
 
@@ -71,6 +79,7 @@ $lid = htmlspecialchars($lid, ENT_QUOTES);
                     </div>
                     <div class="card-footer">
                         <p class="col text-center"><a href="./register.php">会員登録へ</a></p>
+                        <p class="col text-center"><a href="./search.php">検索フォームへ</a></p>
                     </div>
                 </div>
             </div>
@@ -98,8 +107,8 @@ $lid = htmlspecialchars($lid, ENT_QUOTES);
                         url: './login_act.php',
                         dataType: 'JSON'
                     }).done((result, textStatus, jqXHR) => {
-                        if (result.QuerySuccess === 'login') {
-                            window.location.href = './';
+                        if (result.VerifySuccess === 'login') {
+                            window.location.href = './select.php';
                         } else {
                             window.location.reload();
                         }

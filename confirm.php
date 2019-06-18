@@ -1,8 +1,23 @@
 <?php
 
+require_once('./tokenClass.php');
+
 // セッション変数を使うことを宣言する
 session_start();
-session_regenerate_id(true);
+
+// トークンが存在するならログインしていることになる
+if (isset($_SESSION['token'])) {
+    $token = new tokenClass();
+    // トークンを照合し、合致していなければログイン画面へ
+    if (!isset($_SESSION['l_kanri_flg']) || $_SESSION['l_kanri_flg'] !== '1' || !$token->validateToken($_SESSION['token'])) {
+        header('Location: ./login.php');
+        exit();
+    }
+
+    // 合致していれば新しくトークンを発行
+    session_regenerate_id(true);
+    $_SESSION['token'] = $token->generateToken();
+}
 
 // もしセッション変数に定義がある場合は、入力した内容をセットする
 $name = $_SESSION['name'] ?? '';
@@ -51,16 +66,16 @@ if ($lpw === '') {
     $error[] = 'パスワードは半角のみで20文字以内で入力してください';
 }
 
-if ($kanri_flg === null) {
+if ($kanri_flg !== '0' && $kanri_flg !== '1') {
 
     // エラーメッセージを追加
     $error[] = '管理者権限はいずれかにチェックしてください';
 }
 
-if ($life_flg === null) {
+if ($life_flg !== '0' && $life_flg !== '1') {
 
     // エラーメッセージを追加
-    $error[] = '有効・無効はいずれかにチェックしてください';
+    $error[] = '使用状況はいずれかにチェックしてください';
 }
 
 // セッション変数に値を格納
@@ -78,7 +93,7 @@ if (!empty($error)) {
 
     //初めのフォームに飛ぶ
     header('Location: ./register.php');
-    exit;
+    exit();
 }
 
 // エラーがない場合、以下が表示される
@@ -117,18 +132,13 @@ if (!empty($error)) {
                             </tr>
 
                             <tr>
-                                <th>パスワード：</th>
-                                <td>**********</td>
-                            </tr>
-
-                            <tr>
                                 <th>管理者権限：</th>
-                                <td><?php echo ($kanri_flg) ? 'あり' : 'なし'; ?></td>
+                                <td><?php echo ($kanri_flg) ? '管理者' : '一般者'; ?></td>
                             </tr>
 
                             <tr>
-                                <th>有効・無効：</th>
-                                <td><?php echo ($kanri_flg) ? '無効' : '有効'; ?></td>
+                                <th>使用状況：</th>
+                                <td><?php echo ($life_flg) ? '使用しなくなった' : '使用中'; ?></td>
                             </tr>
                         </table>
                         <form method="post">

@@ -1,6 +1,6 @@
 <?php
 
-class Hash {
+class hashClass {
 
     // ハッシュ値を作る
     public function generatePasswordHash($password) {

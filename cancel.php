@@ -1,5 +1,13 @@
 <?php
 
+// Ajax通信でのアクセスのみ実行
+if (
+    !isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+    || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest'
+) {
+    exit('このページは直接アクセスすることを許可されていません。');
+}
+
 // 1. GETデータ取得
 $id = $_GET['id'] ?? null;
 

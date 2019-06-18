@@ -1,20 +1,22 @@
 <?php
 
+require_once('./tokenClass.php');
+
 // セッション変数を使うことを宣言する
 session_start();
-session_regenerate_id(true);
 
+// トークンが存在するならログインしていることになる
 if (isset($_SESSION['token'])) {
-    // セッション変数を全て削除
-    $_SESSION = [];
-
-    // セッションクッキーを削除
-    if (isset($_COOKIE["PHPSESSID"])) {
-        setcookie("PHPSESSID", '', time() - 1800, '/');
+    $token = new tokenClass();
+    // トークンを照合し、合致していなければログイン画面へ
+    if (!isset($_SESSION['l_kanri_flg']) || $_SESSION['l_kanri_flg'] !== '1' || !$token->validateToken($_SESSION['token'])) {
+        header('Location: ./login.php');
+        exit();
     }
 
-    // セッションの登録データを削除
-    session_destroy();
+    // 合致していれば新しくトークンを発行
+    session_regenerate_id(true);
+    $_SESSION['token'] = $token->generateToken();
 }
 
 // もしセッション変数に定義がある場合は、入力した内容をセットする
@@ -105,24 +107,24 @@ $life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
                             <div class="form-group">
                                 <label>管理者権限</label>
                                 <div class="col-sm-10">
-                                    <input type="radio" id="kanri_flg_1" name="kanri_flg" value="1">
-                                    <label for="kanri_flg_1">あり</label>
+                                    <input type="radio" id="kanri_flg_0" name="kanri_flg" value="0"<?php echo ($kanri_flg === '0') ? ' checked' : ''; ?>>
+                                    <label for="kanri_flg_0">一般者</label>
                                 </div>
                                 <div class="col-sm-10">
-                                    <input type="radio" id="kanri_flg_0" name="kanri_flg" value="0">
-                                    <label for="kanri_flg_0">なし</label>
+                                    <input type="radio" id="kanri_flg_1" name="kanri_flg" value="1"<?php echo ($kanri_flg === '1') ? ' checked' : ''; ?>>
+                                    <label for="kanri_flg_1">管理者</label>
                                 </div>
                             </div>
 
                             <div class="form-group">
-                                <label>有効・無効</label>
+                                <label>使用状況</label>
                                 <div class="col-sm-10">
-                                    <input type="radio" id="life_flg_0" name="life_flg" value="0">
-                                    <label for="life_flg_0">有効</label>
+                                    <input type="radio" id="life_flg_0" name="life_flg" value="0"<?php echo ($life_flg === '0') ? ' checked' : ''; ?>>
+                                    <label for="life_flg_0">使用中</label>
                                 </div>
                                 <div class="col-sm-10">
-                                    <input type="radio" id="life_flg_1" name="life_flg" value="1">
-                                    <label for="life_flg_1">無効</label>
+                                    <input type="radio" id="life_flg_1" name="life_flg" value="1"<?php echo ($life_flg === '1') ? ' checked' : ''; ?>>
+                                    <label for="life_flg_1">使用しなくなった</label>
                                 </div>
                             </div>
 
@@ -148,19 +150,19 @@ $life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
                 e.preventDefault();
 
                 let kanri_flg = null;
-                if ($('#kanri_flg_1').prop('checked') && !$('#kanri_flg_2').prop('checked')) {
-                    kanri_flg = 1;
+                if ($('#kanri_flg_0').prop('checked') && !$('#kanri_flg_1').prop('checked')) {
+                    kanri_flg = '0';
                 }
-                else if (!$('#kanri_flg_1').prop('checked') && $('#kanri_flg_2').prop('checked')) {
-                    kanri_flg = 0;
+                else if (!$('#kanri_flg_0').prop('checked') && $('#kanri_flg_1').prop('checked')) {
+                    kanri_flg = '1';
                 }
 
                 let life_flg = null;
-                if ($('#life_flg_1').prop('checked') && !$('#life_flg_2').prop('checked')) {
-                    life_flg = 0;
+                if ($('#life_flg_0').prop('checked') && !$('#life_flg_1').prop('checked')) {
+                    life_flg = '0';
                 }
-                else if (!$('#life_flg_1').prop('checked') && $('#life_flg_2').prop('checked')) {
-                    life_flg = 1;
+                else if (!$('#life_flg_0').prop('checked') && $('#life_flg_1').prop('checked')) {
+                    life_flg = '1';
                 }
 
                 $.ajax({

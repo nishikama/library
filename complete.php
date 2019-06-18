@@ -1,9 +1,29 @@
 <?php
 
-require_once('./Hash.php');
+require_once('./hashClass.php');
+require_once('./tokenClass.php');
 
 // セッション変数を使うことを宣言する
 session_start();
+
+// トークンが存在するならログインしていることになる
+if (isset($_SESSION['token'])) {
+    $token = new tokenClass();
+    // トークンを照合し、合致していなければログイン画面へ
+    if (!isset($_SESSION['l_kanri_flg']) || $_SESSION['l_kanri_flg'] !== '1' || !$token->validateToken($_SESSION['token'])) {
+        header('Location: ./login.php');
+        exit();
+    }
+
+    // 合致していれば新しくトークンを発行
+    session_regenerate_id(true);
+    $_SESSION['token'] = $token->generateToken();
+}
+
+if ($_SESSION['submit'] === 'back') {
+    header('Location: ./register.php');
+    exit();
+}
 
 // 1. POSTデータ取得
 $name = $_SESSION['name'] ?? '';
@@ -20,7 +40,7 @@ try {
 }
 
 // 3. データ登録SQL作成
-$hash = new Hash();
+$hash = new hashClass();
 $stmt = $pdo->prepare("INSERT INTO gs_user_table( id, name, lid, lpw, kanri_flg, life_flg) VALUES( null, :name, :lid, :lpw, :kanri_flg, :life_flg)");
 $stmt->bindValue(':name', $name, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
 $stmt->bindValue(':lid', $lid, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
@@ -48,9 +68,10 @@ $status = $stmt->execute();
                 <div class="card">
                     <div class="card-header">
                         <h3 class="col text-center">登録完了しました。</h3>
+                        <p class="col text-right"><a href="./logout_act.php">ログアウト</a></p>
                     </div>
                     <div class="card-body">
-                        <p class="col text-center"><a href="./index.php">ユーザー一覧へ戻る</a></p>
+                        <p class="col text-center"><a href="./users.php">会員一覧へ戻る</a></p>
                     </div>
                 </div>
             </div>
