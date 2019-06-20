@@ -8,6 +8,7 @@ if (
     exit('このページは直接アクセスすることを許可されていません。');
 }
 
+// クラス定義ファイルを呼び込む
 require_once('./hashClass.php');
 require_once('./tokenClass.php');
 
@@ -27,7 +28,7 @@ try {
 }
 
 // データ登録SQL作成
-$stmt = $pdo->prepare("SELECT lpw FROM gs_user_table WHERE lid = :lid AND life_flg = 0");
+$stmt = $pdo->prepare("SELECT lpw, kanri_flg FROM gs_user_table WHERE lid = :lid AND life_flg = 0");
 $stmt->bindValue(':lid', $lid, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
 
 // SQL実行
@@ -45,10 +46,12 @@ if ($status === false) {
 } else {
     // SQL実行時にエラーがない場合
     $hash = new hashClass();
-    if ($hash->verifyPasswordHash($lpw, $row['lpw'])) {error_log(implode($_SESSION));
+    if ($hash->verifyPasswordHash($lpw, $row['lpw'])) {
         $token = new tokenClass();
         $_SESSION['token'] = $token->generateToken();
-        unset($_SESSION['lpw']);
+        $_SESSION['l_lid'] = $lid;
+        $_SESSION['kanri_flg'] = $row['kanri_flg'];
+        unset($_SESSION['lid'], $_SESSION['lpw']);
         echo json_encode(["VerifySuccess" => "login"]);
     } else {
         $_SESSION['error'] = 'ユーザーIDとパスワードが一致しません。';

@@ -38,8 +38,8 @@ if (isset($_SESSION['token'])) {
 // もしセッション変数に定義がある場合は、入力した内容をセットする
 $name = $_SESSION['name'] ?? '';
 $lid = $_SESSION['lid'] ?? '';
-$kanri_flg = $_SESSION['kanri_flg'] ?? '';
-$life_flg = $_SESSION['life_flg'] ?? '';
+$kanri_flg = $_SESSION['kanri_flg'] ?? 0;
+$life_flg = $_SESSION['life_flg'] ?? 0;
 
 // サニタイズする
 $name = htmlspecialchars($name, ENT_QUOTES);
@@ -55,7 +55,7 @@ $life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>会員登録</title>
+    <title>会員編集</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
@@ -65,7 +65,7 @@ $life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="col text-center">会員登録</h3>
+                        <h3 class="col text-center">会員編集</h3>
                     </div>
                     <div class="card-body">
                         <?php
@@ -192,7 +192,7 @@ $life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
                     },
                     dataType: 'JSON'
                 }).done((data, textStatus, jqXHR) => {
-                    window.location.href = './confirm.php';
+                    window.location.href = './users_confirm.php';
                 });
             });
         });

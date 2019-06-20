@@ -20,7 +20,7 @@ try {
 
 // 3. データ登録SQL作成
 $stmt = $pdo->prepare("DELETE FROM gs_book_table WHERE id = :id");
-$stmt->bindValue(':id', $id, PDO::PARAM_INT);  //Integer（数値の場合 PDO::PARAM_INT)
+$stmt->bindValue(':id', intval($id), PDO::PARAM_INT);  //Integer（数値の場合 PDO::PARAM_INT)
 $status = $stmt->execute();
 
 // 4. データ登録処理後

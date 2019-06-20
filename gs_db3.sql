@@ -76,8 +76,7 @@ CREATE TABLE `gs_book_table` (
 
 INSERT INTO `gs_book_table` (`id`, `title`, `authors`, `publisher`, `publishedDate`, `reserveDate`, `user_id`) VALUES
 (1, '要領よくマスターしたもの勝ち社会福祉士・精神保健福祉士国家試験・共通問題', '社会福祉士国家試験研究会', '', '2007-06-30', '2019-06-18 10:51:10', 1),
-(3, '死ぬまでに読んでおきたい　太宰治', '太宰治', 'ユナイテッド・ブックス', '', '2019-06-18 10:51:10', 1),
-(4, '田舎教師', '田山花袋', '', '2018-03', '2019-06-18 10:51:10', 4);
+(3, '死ぬまでに読んでおきたい　太宰治', '太宰治', 'ユナイテッド・ブックス', '', '2019-06-18 10:51:10', 1);
 
 -- --------------------------------------------------------
 
@@ -91,6 +90,7 @@ CREATE TABLE `gs_user_table` (
   `lid` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
   `lpw` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `kanri_flg` int(1) NOT NULL,
+  `kanri_hash` varchar(256) COLLATE utf8_unicode_ci NOT NULL,
   `life_flg` int(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -98,10 +98,11 @@ CREATE TABLE `gs_user_table` (
 -- テーブルのデータのダンプ `gs_user_table`
 --
 
-INSERT INTO `gs_user_table` (`id`, `name`, `lid`, `lpw`, `kanri_flg`, `life_flg`) VALUES
-(1, 'システム管理者', 'admin', '$2y$10$hi6rBdkcgGyzSsAaU4QMGuvXbuCC/JNFelIlZq9/Fp0T6RTAnSgqe', 1, 0),
-(4, '西川 真', 'nishikama', '$2y$10$z1/vY0vdt8pSwNta8evkbemokGweBO9CQz3mzMbsOyyXX5aOsUl06', 0, 0),
-(5, '西川 紀実子', 'kimitty', '$2y$10$zg9gzaIuaZriEThAcyo/f.5aqDp9BkbUrL/QdMw.XsuID/PPcCRHW', 0, 0);
+INSERT INTO `gs_user_table` (`id`, `name`, `lid`, `lpw`, `kanri_flg`, `kanri_hash`, `life_flg`) VALUES
+(1, 'システム管理者', 'admin', '$2y$10$hi6rBdkcgGyzSsAaU4QMGuvXbuCC/JNFelIlZq9/Fp0T6RTAnSgqe', 1, '19417a7101be0c8cd5542196eb0ea8989e900ba41919629ee4993653d7e9f1b5', 0),
+(4, '西川 真', 'nishikama', '$2y$10$1xU71DGcpuvxpjyA9WtNUOCTzOk6/Dom0vvqDl/D6xrUTJnFbAIJi', 0, '3f54dd7990ff5293290fbb301761fca97ec819935ec40ba488e8598f62b8012e', 0),
+(5, '西川 紀実子', 'kimitty', '$2y$10$zg9gzaIuaZriEThAcyo/f.5aqDp9BkbUrL/QdMw.XsuID/PPcCRHW', 0, '981af14365e91cfab0630140317ae99521110b38051b80edf893afa701bbab1f', 0),
+(6, '西川 結貴', 'yuki', '$2y$10$LGFdiigDtUK.fYJV76i.AuLQlFKAjxKg2KygeW0bLsi8ZF7H.jmhe', 0, 'b79cfd454ccf278f688c168fc9835e9f420d4d8e0bdde1ffb802f86a2b98e0fa', 0);
 
 --
 -- Indexes for dumped tables
@@ -146,7 +147,7 @@ ALTER TABLE `gs_book_table`
 -- AUTO_INCREMENT for table `gs_user_table`
 --
 ALTER TABLE `gs_user_table`
-  MODIFY `id` int(12) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(12) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- ダンプしたテーブルの制約

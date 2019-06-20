@@ -17,16 +17,15 @@ if (isset($_SESSION['token'])) {
     }
 
     // データ検索SQL作成
-    $stmt = $pdo->prepare("SELECT kanri_flg, kanri_hash FROM gs_user_table WHERE lid = :l_lid");
+    $stmt = $pdo->prepare("SELECT kanri_hash FROM gs_user_table WHERE lid = :l_lid");
     $stmt->bindValue(':l_lid', $_SESSION['l_lid'], PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
     $status = $stmt->execute();
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    $kanri_flg = $row['kanri_flg'];
     $kanri_hash = $row['kanri_hash'];
 
     $token = new tokenClass();
     // トークンを照合し、合致していなければログイン画面へ
-    if (!isset($_SESSION['l_lid']) || ($kanri_flg === '1' && $kanri_hash !== hash('sha256', $_SESSION['l_lid'] . 'administrator')) || ($kanri_flg === '0' && $kanri_hash !== hash('sha256', $_SESSION['l_lid'] . 'user')) || !$token->validateToken($_SESSION['token'])) {
+    if (!isset($_SESSION['l_lid']) || $kanri_hash !== hash('sha256', $_SESSION['l_lid'] . 'administrator') || !$token->validateToken($_SESSION['token'])) {
         header('Location: ./login.php');
         exit();
     }
@@ -44,7 +43,7 @@ if (isset($_SESSION['token'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>予約書籍一覧</title>
+    <title>会員一覧</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
@@ -54,7 +53,7 @@ if (isset($_SESSION['token'])) {
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="col text-center">予約書籍一覧</h3>
+                        <h3 class="col text-center">会員一覧</h3>
                         <nav class="navbar navbar-expand-md navbar-light bg-light">
                             <div class="collapse navbar-collapse justify-content-between" id="nav-set">
                                 <ul class="navbar-nav">
@@ -92,20 +91,20 @@ if (isset($_SESSION['token'])) {
                 dataType: 'JSON'
             }).done((session, textStatus, jqXHR) => {
                 $.ajax({
-                    url: './select_act.php',
+                    url: './users_act.php',
                     dataType: 'JSON'
-                }).done((reserveData, textStatus, jqXHR) => {
+                }).done((usersData, textStatus, jqXHR) => {
 
                     let $nav = $('<ul class="navbar-nav"><li class="nav-item"><a class="nav-link" href="./search.php">書籍検索</a></li><li class="nav-item active"><a class="nav-link" href="./select.php">予約書籍一覧</a></li></ul>');
-                    if (reserveData[0].kanri_flg === '1') {
+                    if (usersData[0].kanri_flg === '1') {
                         $nav.append('<li class="nav-item"><a class="nav-link" href="./register.php">ユーザー登録</a></li><li class="nav-item"><a class="nav-link" href="./users.php">ユーザー表示</a></li>');
                     }
                     $('#nav-set').prepend($nav);
 
                     let $table = $('<table class="table">');
-                    $table.append('<tr><th>書籍名</th><th>著者名</th><th>出版社名</th><th>出版日</th><th>予約日</th><th>操作</th></tr>');
-                    $.each(reserveData, (i, item) => {
-                        $table.append(`<tr><td>${item.title ? item.title : ''}</td><td>${item.authors ? item.authors : ''}</td><td>${item.publisher ? item.publisher : ''}</td><td>${item.publishedDate ? item.publishedDate : ''}</td><td>${item.reserveDate ? item.reserveDate : ''}</td><td><input type="submit" data-index="index${i + 1}" class="cancel btn-sm btn-primary" value="予約を取り消す"></td></tr>`);
+                    $table.append('<tr><th>お名前</th><th>ログインID</th><th>管理者権限</th><th>使用状況</th><th>操作</th></tr>');
+                    $.each(usersData, (i, item) => {
+                        $table.append(`<tr><td>${item.name ? item.name : ''}</td><td>${item.lid ? item.lid : ''}</td><td>${(item.kanri_flg === '1') ? '管理者' : '一般者'}</td><td>${(item.life_flg === '1') ? '使用しなくなった' : '使用中'}</td><td><input type="submit" data-index="index${i + 1}" class="edit btn-sm btn-primary" value="編集">　<input type="submit" data-index="index${i + 1}" class="delete btn-sm btn-primary" value="削除"></td></tr>`);
                     });
                     $('#results').html($table);
 
@@ -114,13 +113,13 @@ if (isset($_SESSION['token'])) {
                     if (page > 1) {
                         prev = '<a id="prev" href="javascript:void(0);">前へ</a>';
                     }
-                    if (page < Math.ceil(reserveData.length / 10)) {
+                    if (page < Math.ceil(usersData.length / 10)) {
                         next = '<a id="next" href="javascript:void(0);">次へ</a>';
                     }
-                    if (page > 1 && page < Math.ceil(reserveData.length / 10)) {
-                        $('#pager').html(Math.ceil(reserveData.length / 10) + 'ページ中 ' + page + 'ページ　' + prev + '｜' + next);
+                    if (page > 1 && page < Math.ceil(usersData.length / 10)) {
+                        $('#pager').html(Math.ceil(usersData.length / 10) + 'ページ中 ' + page + 'ページ　' + prev + '｜' + next);
                     } else {
-                        $('#pager').html(Math.ceil(reserveData.length / 10) + 'ページ中 ' + page + 'ページ　' + prev + next);
+                        $('#pager').html(Math.ceil(usersData.length / 10) + 'ページ中 ' + page + 'ページ　' + prev + next);
                     }
 
                     $(document).on('click', '#prev', (e) => {
@@ -135,21 +134,23 @@ if (isset($_SESSION['token'])) {
                         $('#search').trigger('click');
                     });
 
-                    $('.cancel').on('click', (e) => {
+                    $('.edit').on('click', (e) => {
                         e.preventDefault();
                         const index = parseInt($(e.currentTarget).data('index').substr(5)) - 1;
                         $.ajax({
-                            url: './cancel.php',
-                            type: 'GET',
+                            url: './post2session.php',
+                            type: 'POST',
                             data: {
-                                "id": reserveData[index].id
+                                "id": usersData[index].id,
+                                "name": usersData[index].name,
+                                "lid": usersData[index].lid,
+                                "kanri_flg": usersData[index].kanri_flg,
+                                "life_flg": usersData[index].life_flg
                             },
                             dataType: 'JSON'
                         }).done((result, textStatus, jqXHR) => {
-                            if (result.QueryError) {
-                                window.alert(result.QueryError);
-                            } else if (result.QuerySuccess) {
-                                window.alert(result.QuerySuccess);
+                            if (result) {
+                                window.location.href = './edit.php';
                             }
                         });
                     });

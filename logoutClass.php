@@ -10,9 +10,9 @@ class logoutClass {
     // セッションクッキーを削除
     if (isset($_COOKIE["PHPSESSID"])) {
       setcookie("PHPSESSID", '', time() - 1800, '/');
+      
+      // セッションの登録データを削除
+      session_destroy();
     }
-
-    // セッションの登録データを削除
-    session_destroy();
   }
 }

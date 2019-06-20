@@ -10,7 +10,6 @@ if (
 
 // セッション変数を使うことを宣言する
 session_start();
-session_regenerate_id(true);
 
 if (isset($_POST)) {
     foreach ($_POST as $key => $value) {

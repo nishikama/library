@@ -1,12 +1,13 @@
 <?php
 
+// クラス定義ファイルを呼び込む
 require_once('./tokenClass.php');
 require_once('./logoutClass.php');
 
 // セッション変数を使うことを宣言する
 session_start();
 
-// トークンが存在するならログインしていることになる
+// トークンが存在するならログインしていることになるので、いったんログアウトさせる
 if (isset($_SESSION['token'])) {
     $logout = new logoutClass();
     $logout->execute();
@@ -50,11 +51,11 @@ $lid = htmlspecialchars($lid, ENT_QUOTES);
                             <div class="alert alert-danger">
                                 <p><?php echo $error; ?></p>
                             </div>
-                            <?php
-                            
-                        }
+                        <?php
 
-                        ?>
+                    }
+
+                    ?>
                         <form method="POST">
                             <div class="form-group">
                                 <label for="lid">ログインID</label>

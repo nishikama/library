@@ -108,7 +108,7 @@ if (!empty($error)) {
     $_SESSION['error'] = $error;
 
     //初めのフォームに飛ぶ
-    header('Location: ./register.php');
+    header('Location: ./edit.php');
     exit();
 }
 
@@ -183,7 +183,7 @@ if (!empty($error)) {
                     },
                     dataType: 'JSON'
                 }).done((data, textStatus, jqXHR) => {
-                    window.location.href = './complete.php';
+                    window.location.href = './users_complete.php';
                 });
             });
         });

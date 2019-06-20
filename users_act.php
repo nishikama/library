@@ -30,8 +30,6 @@ if (isset($_SESSION['token'])) {
 }
 
 // もしセッション変数に定義がある場合は、入力した内容をセットする
-$l_lid = $_SESSION['l_lid'] ?? '';
-$kanri_flg = $_SESSION['kanri_flg'] ?? '0';
 $page = $_SESSION['page'] ?? 1;
 
 // DB接続
@@ -42,19 +40,13 @@ try {
 }
 
 // データ検索SQL作成
-if ($kanri_flg === '1') {
-    $stmt = $pdo->prepare("SELECT * FROM gs_book_table b, gs_user_table u WHERE b.user_id = u.id AND u.life_flg = 0 LIMIT 10 OFFSET :index");
-}
-else {
-    $stmt = $pdo->prepare("SELECT * FROM gs_book_table b, gs_user_table u WHERE u.lid = :l_lid AND b.user_id = u.id AND u.life_flg = 0 LIMIT 10 OFFSET :index");
-    $stmt->bindValue(':l_lid', $l_lid, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
-}
+$stmt = $pdo->prepare("SELECT * FROM gs_user_table LIMIT 10 OFFSET :index");
 $stmt->bindValue(':index', (intval($page) - 1) * 10, PDO::PARAM_INT);  //Integer（数値の場合 PDO::PARAM_INT)
 $status = $stmt->execute();
 
-$reserveData = [];
+$usersData = [];
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $reserveData[] = $row;
+    $usersData[] = $row;
 }
 
 // データ登録処理後
@@ -65,5 +57,5 @@ if ($status === false) {
     echo json_encode(["QueryError" => $error[2]]);
 } else {
     // SQL実行時にエラーがない場合
-    echo json_encode($reserveData);
+    echo json_encode($usersData);
 }

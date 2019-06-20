@@ -10,7 +10,7 @@ session_start();
 if (isset($_SESSION['token'])) {
     $token = new tokenClass();
     // トークンを照合し、合致していなければログイン画面へ
-    if (!isset($_SESSION['lid']) || $kanri_hash !== hash('sha256', concat($_SESSION['lid'], 'administrator')) || !$token->validateToken($_SESSION['token'])) {
+    if (!isset($_SESSION['l_lid']) || $kanri_hash !== hash('sha256', $_SESSION['l_lid'] . 'administrator') || !$token->validateToken($_SESSION['token'])) {
         header('Location: ./login.php');
         exit();
     }
@@ -21,16 +21,17 @@ if (isset($_SESSION['token'])) {
 }
 
 if ($_SESSION['submit'] === 'back') {
-    header('Location: ./register.php');
+    header('Location: ./edit.php');
     exit();
 }
 
 // 1. POSTデータ取得
+$id = $_SESSION['id'] ?? '1';
 $name = $_SESSION['name'] ?? '';
 $lid = $_SESSION['lid'] ?? '';
 $lpw = $_SESSION['lpw'] ?? '';
-$kanri_flg = $_SESSION['kanri_flg'] ?? '';
-$life_flg = $_SESSION['life_flg'] ?? '';
+$kanri_flg = $_SESSION['kanri_flg'] ?? '0';
+$life_flg = $_SESSION['life_flg'] ?? '0';
 
 // 2. DB接続します
 try {
@@ -41,13 +42,14 @@ try {
 
 // 3. データ登録SQL作成
 $hash = new hashClass();
-$stmt = $pdo->prepare("INSERT INTO gs_user_table( id, name, lid, lpw, kanri_flg, kanri_hash, life_flg) VALUES( null, :name, :lid, :lpw, :kanri_flg, sha2(CONCAT(lid, :kanri_hash)), :life_flg)");
+$stmt = $pdo->prepare("UPDATE gs_user_table SET name = :name, lid = :lid, lpw = :lpw, kanri_flg = :kanri_flg, kanri_hash = sha2(CONCAT(lid, :kanri_hash), 256), life_flg = :life_flg WHERE id = :id");
+$stmt->bindValue(':id', intval($id), PDO::PARAM_INT);  //Integer（数値の場合 PDO::PARAM_INT)
 $stmt->bindValue(':name', $name, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
 $stmt->bindValue(':lid', $lid, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
 $stmt->bindValue(':lpw', $hash->generatePasswordHash($lpw), PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
-$stmt->bindValue(':kanri_flg', $kanri_flg, PDO::PARAM_INT);  //Integer（数値の場合 PDO::PARAM_INT)
+$stmt->bindValue(':kanri_flg', intval($kanri_flg), PDO::PARAM_INT);  //Integer（数値の場合 PDO::PARAM_INT)
 $stmt->bindValue(':kanri_hash', ($kanri_flg === '1') ? 'administrator' : 'user', PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
-$stmt->bindValue(':life_flg', $life_flg, PDO::PARAM_INT);  //Integer（数値の場合 PDO::PARAM_INT)
+$stmt->bindValue(':life_flg', intval($life_flg), PDO::PARAM_INT);  //Integer（数値の場合 PDO::PARAM_INT)
 $status = $stmt->execute();
 
 ?>
@@ -58,7 +60,7 @@ $status = $stmt->execute();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>登録完了</title>
+    <title>編集完了</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
@@ -68,7 +70,7 @@ $status = $stmt->execute();
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="col text-center">登録完了しました。</h3>
+                        <h3 class="col text-center">編集完了しました。</h3>
                         <p class="col text-right"><a href="./logout_act.php">ログアウト</a></p>
                     </div>
                     <div class="card-body">
