@@ -27,8 +27,8 @@ try {
     exit('データベースに接続できませんでした。' . $e->getMessage());
 }
 
-// データ登録SQL作成
-$stmt = $pdo->prepare("SELECT lpw, kanri_flg FROM gs_user_table WHERE lid = :lid AND life_flg = 0");
+// ログイン用SQL作成
+$stmt = $pdo->prepare("SELECT lpw, kanri_flg FROM gs_user_table WHERE lid = :lid AND life_flg = 0 ORDER BY id DESC LIMIT 1");
 $stmt->bindValue(':lid', $lid, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
 
 // SQL実行
@@ -37,24 +37,31 @@ $status = $stmt->execute();
 // レコードを1つだけ取得
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// データ登録処理後
+// ログイン処理の結果を返す
 header('Content-Type: application/json; charset=utf-8');
-if ($status === false) {
-    // SQL実行時にエラーがある場合（エラーオブジェクト取得して表示）
+if (!$status) {
+
+    // SQL実行時にエラーがある場合（エラーオブジェクト取得して返す）
     $error = $stmt->errorInfo();
     echo json_encode(["QueryError" => $error[2]]);
 } else {
+
     // SQL実行時にエラーがない場合
     $hash = new hashClass();
     if ($hash->verifyPasswordHash($lpw, $row['lpw'])) {
+
+        // ログイン成功
         $token = new tokenClass();
         $_SESSION['token'] = $token->generateToken();
         $_SESSION['l_lid'] = $lid;
-        $_SESSION['kanri_flg'] = $row['kanri_flg'];
+        $_SESSION['l_kanri_flg'] = $row['kanri_flg'];
         unset($_SESSION['lid'], $_SESSION['lpw']);
-        echo json_encode(["VerifySuccess" => "login"]);
+        echo json_encode(["VerifySuccess" => true]);
     } else {
+
+        // ログイン失敗
         $_SESSION['error'] = 'ユーザーIDとパスワードが一致しません。';
-        echo json_encode(["VerifyError" => "not login"]);
+        unset($_SESSION['lpw']);
+        echo json_encode(["VerifySuccess" => false]);
     }
 }

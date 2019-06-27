@@ -29,7 +29,7 @@ $title = $_POST['title'] ?? '';
 $authors = $_POST['authors'] ?? '';
 $publisher = $_POST['publisher'] ?? '';
 $publishedDate = $_POST['publishedDate'] ?? '';
-$lid = $_SESSION['lid'] ?? '';
+$l_lid = $_SESSION['l_lid'] ?? '';
 
 // DB接続
 try {
@@ -39,12 +39,12 @@ try {
 }
 
 // データ登録SQL作成
-$stmt = $pdo->prepare("INSERT INTO gs_book_table( id, title, authors, publisher, publishedDate, user_id) VALUES( null, :title, :authors, :publisher, :publishedDate, (SELECT id FROM gs_user_table WHERE lid = :lid))");
+$stmt = $pdo->prepare("INSERT INTO gs_book_table( id, title, authors, publisher, publishedDate, user_id) VALUES( null, :title, :authors, :publisher, :publishedDate, (SELECT id FROM gs_user_table WHERE lid = :l_lid))");
 $stmt->bindValue(':title', $title, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
 $stmt->bindValue(':authors', $authors, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
 $stmt->bindValue(':publisher', $publisher, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
 $stmt->bindValue(':publishedDate', $publishedDate, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
-$stmt->bindValue(':lid', $lid, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
+$stmt->bindValue(':l_lid', $l_lid, PDO::PARAM_STR);  //Integer（数値の場合 PDO::PARAM_INT)
 
 // SQL実行
 $status = $stmt->execute();

@@ -6,6 +6,10 @@ require_once('./tokenClass.php');
 // セッション変数を使うことを宣言する
 session_start();
 
+// もしセッション変数に定義がある場合は、入力した内容をセットする
+$l_lid = $_SESSION['l_lid'] ?? '';
+$l_kanri_flg = $_SESSION['l_kanri_flg'] ?? '';
+
 // トークンが存在するならログインしていることになる
 if (isset($_SESSION['token'])) {
 
@@ -36,16 +40,15 @@ if (isset($_SESSION['token'])) {
 }
 
 // もしセッション変数に定義がある場合は、入力した内容をセットする
+$id = $_SESSION['id'] ?? '1';
 $name = $_SESSION['name'] ?? '';
 $lid = $_SESSION['lid'] ?? '';
-$kanri_flg = $_SESSION['kanri_flg'] ?? 0;
-$life_flg = $_SESSION['life_flg'] ?? 0;
+$kanri_flg = $_SESSION['kanri_flg'] ?? '0';
+$life_flg = $_SESSION['life_flg'] ?? '0';
 
 // サニタイズする
 $name = htmlspecialchars($name, ENT_QUOTES);
 $lid = htmlspecialchars($lid, ENT_QUOTES);
-$kanri_flg = htmlspecialchars($kanri_flg, ENT_QUOTES);
-$life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
 
 ?>
 <!DOCTYPE html>
@@ -66,6 +69,29 @@ $life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
                 <div class="card">
                     <div class="card-header">
                         <h3 class="col text-center">会員編集</h3>
+                        <nav class="navbar navbar-expand-md navbar-light bg-light">
+                            <div class="collapse navbar-collapse justify-content-between" id="nav-set">
+                                <ul class="navbar-nav">
+                                    <li class="nav-item"><a class="nav-link" href="./search.php">書籍検索</a></li>
+                                    <li class="nav-item active"><a class="nav-link" href="./select.php">予約書籍一覧</a></li>
+                                <?php
+
+                                if ($l_kanri_flg === '1') {
+
+                                    ?>
+                                        <li class="nav-item"><a class="nav-link" href="./register.php">ユーザー登録</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="./users.php">ユーザー表示</a></li>
+                                    </ul>
+                                <?php
+
+                            }
+
+                            ?>
+                                <ul class="navbar-nav">
+                                    <li class="nav-item"><a class="nav-link" href="./logout.php">ログアウト</a></li>
+                                </ul>
+                            </div>
+                        </nav>
                     </div>
                     <div class="card-body">
                         <?php
@@ -147,7 +173,10 @@ $life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
 
                             <div class="form-group">
                                 <div class="col-sm-10 col-sm-offset-2">
-                                    <input type="submit" id="submit" value="送信" class="btn btn-primary">
+                                    <form>
+                                        <input type="submit" data-direction="back" value="戻る" class="btn btn-secondary">
+                                        <input type="submit" data-direction="submit" value="確認" class="btn btn-primary">
+                                    </form>
                                 </div>
                             </div>
                         </form>
@@ -163,7 +192,7 @@ $life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
         $(() => {
 
             // こうやれば、リロードしてもアラートが出ない？かも？
-            $('#submit').on('click', (e) => {
+            $('.btn').on('click', (e) => {
                 e.preventDefault();
 
                 let kanri_flg = null;
@@ -188,11 +217,13 @@ $life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
                         "lid": $('#lid').val(),
                         "lpw": $('#lpw').val(),
                         "kanri_flg": kanri_flg,
-                        "life_flg": life_flg
+                        "life_flg": life_flg,
+                        "register": false,
+                        "submit": $(e.currentTarget).data('direction')
                     },
                     dataType: 'JSON'
                 }).done((data, textStatus, jqXHR) => {
-                    window.location.href = './users_confirm.php';
+                    window.location.href = './confirm.php';
                 });
             });
         });

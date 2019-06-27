@@ -6,6 +6,7 @@ require_once('./logoutClass.php');
 
 // セッション変数を使うことを宣言する
 session_start();
+session_regenerate_id(true);
 
 // トークンが存在するならログインしていることになるので、いったんログアウトさせる
 if (isset($_SESSION['token'])) {
@@ -48,7 +49,7 @@ $lid = htmlspecialchars($lid, ENT_QUOTES);
 
                             // 赤文字にする
                             ?>
-                            <div class="alert alert-danger">
+                            <div class="alert alert-danger" id="alert">
                                 <p><?php echo $error; ?></p>
                             </div>
                         <?php
@@ -56,7 +57,7 @@ $lid = htmlspecialchars($lid, ENT_QUOTES);
                     }
 
                     ?>
-                        <form method="POST">
+                        <form>
                             <div class="form-group">
                                 <label for="lid">ログインID</label>
                                 <div class="col-sm-10">
@@ -79,8 +80,7 @@ $lid = htmlspecialchars($lid, ENT_QUOTES);
                         </form>
                     </div>
                     <div class="card-footer">
-                        <p class="col text-center"><a href="./register.php">会員登録へ</a></p>
-                        <p class="col text-center"><a href="./search.php">検索フォームへ</a></p>
+                        <p class="col text-center"><a href="./search.php">書籍検索へ</a></p>
                     </div>
                 </div>
             </div>
@@ -108,12 +108,18 @@ $lid = htmlspecialchars($lid, ENT_QUOTES);
                         url: './login_act.php',
                         dataType: 'JSON'
                     }).done((result, textStatus, jqXHR) => {
-                        if (result.VerifySuccess === 'login') {
+                        // ログイン成功
+                        if (result.VerifySuccess) {
                             window.location.href = './select.php';
                         } else {
+                        // ログイン失敗
                             window.location.reload();
                         }
-                    })
+                    }).fail((jqXHR, textStatus, errorThrown) => {
+                        $('#alert').text('エラーが発生しました。ステータス：' + jqXHR.status);
+                    });
+                }).fail((jqXHR, textStatus, errorThrown) => {
+                    $('#alert').text('エラーが発生しました。ステータス：' + jqXHR.status);
                 });
             });
         });

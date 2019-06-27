@@ -30,7 +30,7 @@ if (isset($_SESSION['token'])) {
 }
 
 // もしセッション変数に定義がある場合は、入力した内容をセットする
-$page = $_SESSION['page'] ?? 1;
+$page = $_SESSION['page'] ?? '1';
 
 // DB接続
 try {
@@ -40,22 +40,25 @@ try {
 }
 
 // データ検索SQL作成
-$stmt = $pdo->prepare("SELECT * FROM gs_user_table LIMIT 10 OFFSET :index");
-$stmt->bindValue(':index', (intval($page) - 1) * 10, PDO::PARAM_INT);  //Integer（数値の場合 PDO::PARAM_INT)
-$status = $stmt->execute();
+$stmt1 = $pdo->prepare("SELECT SQL_CALC_FOUND_ROWS * FROM gs_user_table LIMIT 10 OFFSET :index");
+$stmt1->bindValue(':index', (intval($page) - 1) * 10, PDO::PARAM_INT);  //Integer（数値の場合 PDO::PARAM_INT)
+$status = $stmt1->execute();
+
+$stmt2 = $pdo->query("SELECT FOUND_ROWS()");
+$total = $stmt2->fetchColumn();
 
 $usersData = [];
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+while ($row = $stmt1->fetch(PDO::FETCH_ASSOC)) {
     $usersData[] = $row;
 }
 
 // データ登録処理後
 header('Content-Type: application/json; charset=utf-8');
-if ($status === false) {
+if (!$status) {
     // SQL実行時にエラーがある場合（エラーオブジェクト取得して表示）
     $error = $stmt->errorInfo();
     echo json_encode(["QueryError" => $error[2]]);
 } else {
     // SQL実行時にエラーがない場合
-    echo json_encode($usersData);
+    echo json_encode(["usersData" => $usersData, "total" => $total]);
 }

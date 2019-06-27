@@ -1,9 +1,14 @@
 <?php
 
+// クラス定義ファイルを呼び込む
 require_once('./tokenClass.php');
 
 // セッション変数を使うことを宣言する
 session_start();
+
+// もしセッション変数に定義がある場合は、入力した内容をセットする
+$l_lid = $_SESSION['l_lid'] ?? '';
+$l_kanri_flg = $_SESSION['l_kanri_flg'] ?? '';
 
 // トークンが存在するならログインしていることになる
 if (isset($_SESSION['token'])) {
@@ -38,18 +43,43 @@ if (isset($_SESSION['token'])) {
                 <div class="card">
                     <div class="card-header">
                         <h3 class="col text-center">書籍検索</h3>
-                        <?php
-                            if (isset($_SESSION['token'])) {
-                        ?>
-                        <p class="col text-right"><a href="./logout.php">ログアウト</a></p>
-                        <?php
+                        <nav class="navbar navbar-expand-md navbar-light bg-light">
+                            <div class="collapse navbar-collapse justify-content-between" id="nav-set">
+                                <ul class="navbar-nav">
+                                    <li class="nav-item active"><a class="nav-link" href="./search.php">書籍検索</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="./select.php">予約書籍一覧</a></li>
+                                    <?php
+
+                                    if ($l_kanri_flg === '1') {
+
+                                        ?>
+                                        <li class="nav-item"><a class="nav-link" href="./register.php">ユーザー登録</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="./users.php">ユーザー表示</a></li>
+
+                                    <?php
+
+                                }
+                                ?>
+                                </ul>
+                                <ul class="navbar-nav">
+                                <?php
+
+                                if (isset($_SESSION['token'])) {
+
+                                    ?>
+
+                                    <li class="nav-item"><a class="nav-link" href="./logout.php">ログアウト</a></li>
+                                <?php
+                            } else {
+                                ?>
+                                    <li class="nav-item"><a class="nav-link" href="./login.php">ログイン</a></li>
+                                <?php
                             }
-                            else {
-                        ?>
-                        <p class="col text-right"><a href="./login.php">ログイン</a></p>
-                        <?php
-                            }
-                        ?>
+
+                            ?>
+                            </ul>
+                            </div>
+                        </nav>
                     </div>
                     <div class="card-body">
                         <form method="POST">
@@ -72,14 +102,14 @@ if (isset($_SESSION['token'])) {
                         </form>
                     </div>
                     <?php
-                        if (isset($_SESSION['token'])) {
-                    ?>
-                    <div class="card-footer">
-                        <p class="col text-center"><a href="./select.php">予約書籍一覧へ</a></p>
-                    </div>
+                    if (isset($_SESSION['token'])) {
+                        ?>
+                        <div class="card-footer">
+                            <p class="col text-center"><a href="./select.php">予約書籍一覧へ</a></p>
+                        </div>
                     <?php
-                        }
-                    ?>
+                }
+                ?>
                 </div>
             </div>
         </div>
@@ -101,11 +131,11 @@ if (isset($_SESSION['token'])) {
                         "page": page
                     },
                     dataType: 'JSON'
-                }).done((bookdata, textStatus, jqXHR) => {
+                }).done((bookData, textStatus, jqXHR) => {
                     let $table = $('<table class="table">');
                     $table.append('<tr><th>書籍名</th><th>著者名</th><th>出版社名</th><th>出版日</th><?php if (isset($_SESSION['token'])) echo '<th>操作</th>'; ?></tr>');
                     let authors = [];
-                    $.each(bookdata.items, (i, item) => {
+                    $.each(bookData.items, (i, item) => {
                         authors[i] = '';
                         $.each(item.volumeInfo.authors, (j, author) => {
                             authors[i] += author ? author : '';
@@ -122,13 +152,13 @@ if (isset($_SESSION['token'])) {
                     if (page > 1) {
                         prev = '<a id="prev" href="javascript:void(0);">前へ</a>';
                     }
-                    if (page < bookdata.totalItems) {
+                    if (page < bookData.totalItems) {
                         next = '<a id="next" href="javascript:void(0);">次へ</a>';
                     }
-                    if (page > 1 && page < bookdata.totalItems) {
-                        $('#pager').html(Math.ceil(bookdata.totalItems / 10) + 'ページ中 ' + page + 'ページ　' + prev + '｜' + next);
+                    if (page > 1 && page < bookData.totalItems) {
+                        $('#pager').html(Math.ceil(bookData.totalItems / 10) + 'ページ中 ' + page + 'ページ　' + prev + '｜' + next);
                     } else {
-                        $('#pager').html(Math.ceil(bookdata.totalItems / 10) + 'ページ中 ' + page + 'ページ　' + prev + next);
+                        $('#pager').html(Math.ceil(bookData.totalItems / 10) + 'ページ中 ' + page + 'ページ　' + prev + next);
                     }
 
                     $(document).on('click', '#prev', (e) => {
@@ -150,10 +180,10 @@ if (isset($_SESSION['token'])) {
                             url: './insert.php',
                             type: 'POST',
                             data: {
-                                "title": bookdata.items[index].volumeInfo.title,
+                                "title": bookData.items[index].volumeInfo.title,
                                 "authors": authors[index],
-                                "publisher": bookdata.items[index].volumeInfo.publisher,
-                                "publishedDate": bookdata.items[index].volumeInfo.publishedDate
+                                "publisher": bookData.items[index].volumeInfo.publisher,
+                                "publishedDate": bookData.items[index].volumeInfo.publishedDate
                             },
                             dataType: 'JSON'
                         }).done((result, textStatus, jqXHR) => {

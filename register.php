@@ -6,6 +6,10 @@ require_once('./tokenClass.php');
 // セッション変数を使うことを宣言する
 session_start();
 
+// もしセッション変数に定義がある場合は、入力した内容をセットする
+$l_lid = $_SESSION['l_lid'] ?? '';
+$l_kanri_flg = $_SESSION['l_kanri_flg'] ?? '';
+
 // トークンが存在するならログインしていることになる
 if (isset($_SESSION['token'])) {
 
@@ -55,7 +59,7 @@ $life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>会員登録</title>
+    <title>ユーザー登録</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
@@ -65,7 +69,30 @@ $life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="col text-center">会員登録</h3>
+                        <h3 class="col text-center">ユーザー登録</h3>
+                        <nav class="navbar navbar-expand-md navbar-light bg-light">
+                            <div class="collapse navbar-collapse justify-content-between" id="nav-set">
+                                <ul class="navbar-nav">
+                                    <li class="nav-item"><a class="nav-link" href="./search.php">書籍検索</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="./select.php">予約書籍一覧</a></li>
+                                <?php
+
+                                if ($l_kanri_flg === '1') {
+
+                                    ?>
+                                        <li class="nav-item active"><a class="nav-link" href="./register.php">ユーザー登録</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="./users.php">ユーザー表示</a></li>
+                                    </ul>
+                                <?php
+
+                            }
+
+                            ?>
+                                <ul class="navbar-nav">
+                                    <li class="nav-item"><a class="nav-link" href="./logout.php">ログアウト</a></li>
+                                </ul>
+                            </div>
+                        </nav>
                     </div>
                     <div class="card-body">
                         <?php
@@ -188,7 +215,8 @@ $life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
                         "lid": $('#lid').val(),
                         "lpw": $('#lpw').val(),
                         "kanri_flg": kanri_flg,
-                        "life_flg": life_flg
+                        "life_flg": life_flg,
+                        "register": true
                     },
                     dataType: 'JSON'
                 }).done((data, textStatus, jqXHR) => {

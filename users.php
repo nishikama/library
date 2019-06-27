@@ -57,16 +57,41 @@ if (isset($_SESSION['token'])) {
                         <nav class="navbar navbar-expand-md navbar-light bg-light">
                             <div class="collapse navbar-collapse justify-content-between" id="nav-set">
                                 <ul class="navbar-nav">
+                                    <li class="nav-item"><a class="nav-link" href="./search.php">書籍検索</a></li>
+                                    <li class="nav-item active"><a class="nav-link" href="./select.php">予約書籍一覧</a></li>
+                                    <?php
+
+                                    if ($_SESSION['l_kanri_flg'] === '1') {
+
+                                        ?>
+                                        <li class="nav-item"><a class="nav-link" href="./register.php">ユーザー登録</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="./users.php">ユーザー表示</a></li>
+                                    </ul>
+                                <?php
+
+                            }
+
+                            ?>
+                                <ul class="navbar-nav">
                                     <li class="nav-item"><a class="nav-link" href="./logout.php">ログアウト</a></li>
                                 </ul>
                             </div>
                         </nav>
                     </div>
                     <div class="card-body">
-
-                        <div id="results"></div>
-                        <div id="pager"></div>
-
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>お名前</th>
+                                    <th>ログインID</th>
+                                    <th>管理者権限</th>
+                                    <th>使用状況</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results"></tbody>
+                            <tfoot id="pager"></tfoot>
+                        </table>
                     </div>
                     <div class="card-footer">
                         <p class="col text-center"><a href="./search.php">検索フォームへ</a></p>
@@ -82,81 +107,106 @@ if (isset($_SESSION['token'])) {
         let page = 1;
         $(() => {
 
-            $.ajax({
-                url: './post2session.php',
-                type: 'POST',
-                data: {
-                    "page": page
-                },
-                dataType: 'JSON'
-            }).done((session, textStatus, jqXHR) => {
+            // 会員一覧を表示する関数
+            const viewTable = (() => {
+                $('#results').empty();
                 $.ajax({
-                    url: './users_act.php',
+                    url: './post2session.php',
+                    type: 'POST',
+                    data: {
+                        "page": page
+                    },
                     dataType: 'JSON'
-                }).done((usersData, textStatus, jqXHR) => {
+                }).done((session, textStatus, jqXHR) => {
+                    
+                    $('#results').empty();
+                    $.ajax({
+                        url: './users_act.php',
+                        dataType: 'JSON'
+                    }).done((data, textStatus, jqXHR) => {
 
-                    let $nav = $('<ul class="navbar-nav"><li class="nav-item"><a class="nav-link" href="./search.php">書籍検索</a></li><li class="nav-item active"><a class="nav-link" href="./select.php">予約書籍一覧</a></li></ul>');
-                    if (usersData[0].kanri_flg === '1') {
-                        $nav.append('<li class="nav-item"><a class="nav-link" href="./register.php">ユーザー登録</a></li><li class="nav-item"><a class="nav-link" href="./users.php">ユーザー表示</a></li>');
-                    }
-                    $('#nav-set').prepend($nav);
+                        $.each(data.usersData, (i, item) => {
+                            $('#results').append(`<tr><td>${item.name ? item.name : ''}</td><td>${item.lid ? item.lid : ''}</td><td>${(item.kanri_flg === '1') ? '管理者' : '一般者'}</td><td>${(item.life_flg === '1') ? '使用しなくなった' : '使用中'}</td><td><input type="submit" data-index="index${i + 1}" class="edit btn-sm btn-primary" value="編集"> <input type="submit" data-index="index${i + 1}" class="delete btn-sm btn-primary" value="削除"></td></tr>`);
+                        });
 
-                    let $table = $('<table class="table">');
-                    $table.append('<tr><th>お名前</th><th>ログインID</th><th>管理者権限</th><th>使用状況</th><th>操作</th></tr>');
-                    $.each(usersData, (i, item) => {
-                        $table.append(`<tr><td>${item.name ? item.name : ''}</td><td>${item.lid ? item.lid : ''}</td><td>${(item.kanri_flg === '1') ? '管理者' : '一般者'}</td><td>${(item.life_flg === '1') ? '使用しなくなった' : '使用中'}</td><td><input type="submit" data-index="index${i + 1}" class="edit btn-sm btn-primary" value="編集">　<input type="submit" data-index="index${i + 1}" class="delete btn-sm btn-primary" value="削除"></td></tr>`);
-                    });
-                    $('#results').html($table);
+                        let prev = '';
+                        let next = '';
 
-                    let prev = '';
-                    let next = '';
-                    if (page > 1) {
-                        prev = '<a id="prev" href="javascript:void(0);">前へ</a>';
-                    }
-                    if (page < Math.ceil(usersData.length / 10)) {
-                        next = '<a id="next" href="javascript:void(0);">次へ</a>';
-                    }
-                    if (page > 1 && page < Math.ceil(usersData.length / 10)) {
-                        $('#pager').html(Math.ceil(usersData.length / 10) + 'ページ中 ' + page + 'ページ　' + prev + '｜' + next);
-                    } else {
-                        $('#pager').html(Math.ceil(usersData.length / 10) + 'ページ中 ' + page + 'ページ　' + prev + next);
-                    }
+                        const count = Math.ceil(data.total / 10) ? Math.ceil(data.total / 10) : 0;
 
-                    $(document).on('click', '#prev', (e) => {
-                        e.preventDefault();
-                        page--;
-                        $('#search').trigger('click');
-                    });
+                        if (page > 1) {
+                            prev = '<a id="prev" href="javascript:void(0);">前へ</a>';
+                        }
+                        if (page < count) {
+                            next = '<a id="next" href="javascript:void(0);">次へ</a>';
+                        }
+                        if (page > 1 && page < count) {
+                            $('#pager').html(count + 'ページ中 ' + page + 'ページ　' + prev + '｜' + next);
+                        } else {
+                            $('#pager').html(count + 'ページ中 ' + page + 'ページ　' + prev + next);
+                        }
 
-                    $(document).on('click', '#next', (e) => {
-                        e.preventDefault();
-                        page++;
-                        $('#search').trigger('click');
-                    });
+                        $('.edit').on('click', (e) => {
+                            e.preventDefault();
+                            const index = parseInt($(e.currentTarget).data('index').substr(5)) - 1;
+                            $.ajax({
+                                url: './post2session.php',
+                                type: 'POST',
+                                data: {
+                                    "id": data.usersData[index].id,
+                                    "name": data.usersData[index].name,
+                                    "lid": data.usersData[index].lid,
+                                    "kanri_flg": data.usersData[index].kanri_flg,
+                                    "life_flg": data.usersData[index].life_flg
+                                },
+                                dataType: 'JSON'
+                            }).done((result, textStatus, jqXHR) => {
+                                if (result) {
+                                    window.location.href = './edit.php';
+                                }
+                            });
+                        });
 
-                    $('.edit').on('click', (e) => {
-                        e.preventDefault();
-                        const index = parseInt($(e.currentTarget).data('index').substr(5)) - 1;
-                        $.ajax({
-                            url: './post2session.php',
-                            type: 'POST',
-                            data: {
-                                "id": usersData[index].id,
-                                "name": usersData[index].name,
-                                "lid": usersData[index].lid,
-                                "kanri_flg": usersData[index].kanri_flg,
-                                "life_flg": usersData[index].life_flg
-                            },
-                            dataType: 'JSON'
-                        }).done((result, textStatus, jqXHR) => {
-                            if (result) {
-                                window.location.href = './edit.php';
+                        $('.delete').on('click', (e) => {
+                            e.preventDefault();
+                            const index = parseInt($(e.currentTarget).data('index').substr(5)) - 1;
+                            if (window.confirm('本当に削除しますか？')) {
+                                $.ajax({
+                                    url: './delete.php',
+                                    type: 'GET',
+                                    data: {
+                                        "id": data.usersData[index].id
+                                    },
+                                    dataType: 'JSON'
+                                }).done((result, textStatus, jqXHR) => {
+                                    if (result.QueryError) {
+                                        window.alert(result.QueryError);
+                                    } else if (result.QuerySuccess) {
+                                        window.alert(result.QuerySuccess);
+                                    }
+                                }).fail((jqXHR, textStatus, errorThrown) => {
+                                    $('#results').text('エラーが発生しました。ステータス：' + jqXHR.status);
+                                });
+                                viewTable();
                             }
                         });
+                    }).fail((jqXHR, textStatus, errorThrown) => {
+                        $('#results').text('エラーが発生しました。ステータス：' + jqXHR.status);
                     });
-                }).fail((jqXHR, textStatus, errorThrown) => {
-                    console.log(textStatus);
                 });
+            });
+            viewTable();
+
+            $(document).on('click', '#prev', (e) => {
+                e.preventDefault();
+                page--;
+                viewTable();
+            });
+
+            $(document).on('click', '#next', (e) => {
+                e.preventDefault();
+                page++;
+                viewTable();
             });
         });
     </script>

@@ -35,19 +35,23 @@ if (isset($_SESSION['token'])) {
     $_SESSION['token'] = $token->generateToken();
 }
 
+if ($_SESSION['submit'] === 'back') {
+    header('Location: ./users.php');
+    exit();
+}
+
 // もしセッション変数に定義がある場合は、入力した内容をセットする
+$id = $_SESSION['id'] ?? '1';
 $name = $_SESSION['name'] ?? '';
 $lid = $_SESSION['lid'] ?? '';
 $lpw = $_SESSION['lpw'] ?? '';
-$kanri_flg = $_SESSION['kanri_flg'] ?? '';
-$life_flg = $_SESSION['life_flg'] ?? '';
+$kanri_flg = $_SESSION['kanri_flg'] ?? '0';
+$life_flg = $_SESSION['life_flg'] ?? '0';
+$register = $_SESSION['register'] ?? false;
 
 // サニタイズする
 $name = htmlspecialchars($name, ENT_QUOTES);
 $lid = htmlspecialchars($lid, ENT_QUOTES);
-$lpw = htmlspecialchars($lpw, ENT_QUOTES);
-$kanri_flg = htmlspecialchars($kanri_flg, ENT_QUOTES);
-$life_flg = htmlspecialchars($life_flg, ENT_QUOTES);
 
 // エラーがない状態にセット（空配列）
 $error = [];
@@ -95,6 +99,7 @@ if ($life_flg !== '0' && $life_flg !== '1') {
 }
 
 // セッション変数に値を格納
+$_SESSION['id'] = $id;
 $_SESSION['name'] = $name;
 $_SESSION['lid'] = $lid;
 $_SESSION['lpw'] = $lpw;
@@ -108,7 +113,11 @@ if (!empty($error)) {
     $_SESSION['error'] = $error;
 
     //初めのフォームに飛ぶ
-    header('Location: ./register.php');
+    if ($register) {
+        header('Location: ./register.php');
+    } else {
+        header('Location: ./edit.php');
+    }
     exit();
 }
 
@@ -132,6 +141,30 @@ if (!empty($error)) {
                 <div class="card">
                     <div class="card-header">
                         <h3 class="col text-center">確認画面</h3>
+                        <nav class="navbar navbar-expand-md navbar-light bg-light">
+                            <div class="collapse navbar-collapse justify-content-between" id="nav-set">
+                                <ul class="navbar-nav">
+                                    <li class="nav-item"><a class="nav-link" href="./search.php">書籍検索</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="./select.php">予約書籍一覧</a></li>
+                                <?php
+
+                                if ($_SESSION['l_kanri_flg'] === '1') {
+
+                                    ?>
+                                        <li class="nav-item"><a class="nav-link" href="./register.php">ユーザー登録</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="./users.php">ユーザー表示</a></li>
+                                    
+                                <?php
+
+                            }
+
+                            ?>
+                            </ul>
+                                <ul class="navbar-nav">
+                                    <li class="nav-item"><a class="nav-link" href="./logout.php">ログアウト</a></li>
+                                </ul>
+                            </div>
+                        </nav>
                     </div>
                     <div class="card-body">
                         <p>誤りがないことを確認のうえ完了ボタンをクリックしてください。</p>
