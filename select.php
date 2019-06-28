@@ -130,7 +130,7 @@ $_SESSION['token'] = $token->generateToken();
                     $.ajax({
                         url: './select_act.php',
                         dataType: 'JSON'
-                    }).done((reserveData, textStatus, jqXHR) => {
+                    }).done((reserveData, textStatus, jqXHR) => {console.log(reserveData);
 
                         if (reserveData.length) {
                             $.each(reserveData, (i, item) => {
@@ -150,9 +150,9 @@ $_SESSION['token'] = $token->generateToken();
                             next = '<a id="next" href="javascript:void(0);">次へ</a>';
                         }
                         if (page > 1 && page < count) {
-                            $('#pager').html(count + 'ページ中 ' + page + 'ページ　' + prev + '｜' + next);
+                            $('#pager').html(count + 'ページ中 ' + (count ? page : 0) + 'ページ　' + prev + '｜' + next);
                         } else {
-                            $('#pager').html(count + 'ページ中 ' + page + 'ページ　' + prev + next);
+                            $('#pager').html(count + 'ページ中 ' + (count ? page : 0) + 'ページ　' + prev + next);
                         }
 
                         $(document).on('click', '#prev', (e) => {
@@ -194,8 +194,8 @@ $_SESSION['token'] = $token->generateToken();
                         $('#results').text('エラーが発生しました。ステータス：' + jqXHR.status);
                     });
                 });
-                viewTable();
             });
+            viewTable();
         });
     </script>
 </body>

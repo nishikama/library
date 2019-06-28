@@ -35,7 +35,7 @@ if (isset($_SESSION['token'])) {
     $_SESSION['token'] = $token->generateToken();
 }
 
-if ($_SESSION['submit'] === 'back') {
+if (isset($_SESSION['submit']) && $_SESSION['submit'] === 'back') {
     header('Location: ./users.php');
     exit();
 }
